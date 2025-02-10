@@ -1,0 +1,13 @@
+/* Styling sheet for the html components */
+
+.main-container {
+    display: grid;
+    grid-template-areas:
+    "box1 box1"
+    "box2 box3"
+    "box4 box5"
+    "box6 box7"
+    max-width: 100%;
+    overlap-y: auto;
+    background-color: #16277c;
+}
