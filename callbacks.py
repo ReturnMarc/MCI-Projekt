@@ -1,6 +1,7 @@
 from dash import Input, Output, State, dcc
 import pandas as pd
 from model_utils import train_model, plot_feature_importance, plot_shap_values, plot_partial_dependence
+from model_store import store
 
 def register_callbacks(app):
     """
@@ -32,11 +33,10 @@ def register_callbacks(app):
         [State('housing-dataframe-store', 'data')]
     )
     def update_xai_plot(selected_feature, plot_type, instance_idx, stored_data):
-        # Load data
-        df = pd.read_json(stored_data, orient='split')
-        
-        # Train model
-        model, X_train, X_test = train_model(df)
+        # Use stored model and data instead of training again
+        model = store.model
+        X_train = store.X_train
+        X_test = store.X_test
         
         if plot_type == 'feature_importance':
             return plot_feature_importance(model, X_test.columns)
