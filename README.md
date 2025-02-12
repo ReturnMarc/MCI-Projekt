@@ -25,3 +25,4 @@ Start the dashboard by running:
 ```cmd
 python main.py
 ```
+Then follow the instructions in the command window.
