@@ -22,7 +22,7 @@ def train_model(df):
     ])
     
     categorical_transformer = Pipeline(steps=[
-        ('onehot', OneHotEncoder(drop='first', sparse=False))
+        ('onehot', OneHotEncoder(drop='first', sparse_output=False))
     ])
     
     # Combine transformers
