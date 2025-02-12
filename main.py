@@ -23,7 +23,6 @@ store.model = model
 store.X_train = X_train
 store.X_test = X_test
 
-
 # Set the layout of the app (see layout.py)
 app.layout = create_layout()
 

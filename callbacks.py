@@ -1,6 +1,11 @@
 from dash import Input, Output, State, dcc
 import pandas as pd
-from model_utils import train_model, plot_feature_importance, plot_shap_values, plot_partial_dependence
+from model_utils import (
+    plot_feature_importance, 
+    plot_shap_values, 
+    plot_partial_dependence,
+    plot_lime_explanation
+)
 from model_store import store
 
 def register_callbacks(app):
@@ -29,10 +34,9 @@ def register_callbacks(app):
         Output('xai-plot', 'figure'),
         [Input('feature-selector', 'value'),
          Input('plot-type', 'value'),
-         Input('instance-selector', 'value')],
-        [State('housing-dataframe-store', 'data')]
+         Input('instance-selector', 'value')]
     )
-    def update_xai_plot(selected_feature, plot_type, instance_idx, stored_data):
+    def update_xai_plot(selected_feature, plot_type, instance_idx):
         # Use stored model and data instead of training again
         model = store.model
         X_train = store.X_train
@@ -40,11 +44,16 @@ def register_callbacks(app):
         
         if plot_type == 'feature_importance':
             return plot_feature_importance(model, X_test.columns)
+        
         elif plot_type == 'shap':
             X_sample = X_test.iloc[instance_idx:instance_idx+1]
             return plot_shap_values(model, X_sample, X_test.columns)
+        
         elif plot_type == 'partial_dependence':
             return plot_partial_dependence(model, X_train, selected_feature)
-
+        
+        elif plot_type == 'lime':
+            X_sample = X_test.iloc[instance_idx:instance_idx+1]
+            return plot_lime_explanation(model, X_sample, X_train)
 
 

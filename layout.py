@@ -21,7 +21,8 @@ def create_layout():
                 options=[
                     {'label': 'Feature Importance', 'value': 'feature_importance'},
                     {'label': 'SHAP Values', 'value': 'shap'},
-                    {'label': 'Partial Dependence', 'value': 'partial_dependence'}
+                    {'label': 'Partial Dependence', 'value': 'partial_dependence'},
+                    {'label': 'LIME Explanation', 'value': 'lime'}
                 ],
                 value='feature_importance'
             ),

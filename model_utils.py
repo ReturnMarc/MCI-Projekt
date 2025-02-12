@@ -8,6 +8,9 @@ from sklearn.pipeline import Pipeline
 import plotly.express as px
 import plotly.graph_objects as go
 import shap
+import lime
+import lime.lime_tabular
+
 
 def train_model(df):
     # Separate features
@@ -114,7 +117,7 @@ def plot_shap_values(model, X_sample, feature_names):
     fig.add_trace(go.Waterfall(
         name='SHAP values',
         orientation='h',
-        y=feature_names,
+        y=transformed_feature_names,
         x=shap_values[0],
         connector={'mode': 'spanning'}
     ))
@@ -185,6 +188,62 @@ def plot_partial_dependence(model, X, feature_name, num_points=50):
             xaxis_title=x_label,
             yaxis_title='Predicted House Value',
             xaxis_tickangle=-45 if feature_name in categorical_features else 0
+        )
+        
+        return fig
+    else:
+        raise ValueError("Model must be a scikit-learn pipeline with preprocessor and regressor steps")
+    
+def plot_lime_explanation(model, X_sample, X_train, num_features=10):
+    """Generate LIME explanation plot for a specific instance"""
+    # Get preprocessor and final estimator from pipeline
+    if hasattr(model, 'named_steps'):
+        preprocessor = model.named_steps['preprocessor']
+        rf_model = model.named_steps['regressor']
+        
+        # Get transformed feature names
+        numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
+        categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out()
+        transformed_feature_names = list(numeric_features) + list(categorical_features)
+        
+        # Transform training data for LIME explainer
+        train_data = preprocessor.transform(X_train)
+        
+        # Create LIME explainer with training data
+        explainer = lime.lime_tabular.LimeTabularExplainer(
+            training_data=train_data,
+            feature_names=transformed_feature_names,
+            class_names=['median_house_value'],
+            mode='regression',
+            training_labels=None,
+            categorical_features=list(range(len(categorical_features))) if len(categorical_features) > 0 else None
+        )
+        
+        # Transform and explain the sample instance
+        X_transformed = preprocessor.transform(X_sample)
+        exp = explainer.explain_instance(
+            X_transformed[0], 
+            rf_model.predict,
+            num_features=num_features
+        )
+        
+        # Extract feature contributions
+        feature_importance = exp.as_list()
+        features, values = zip(*feature_importance)
+        
+        # Create Plotly figure
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=values,
+            y=features,
+            orientation='h'
+        ))
+        
+        fig.update_layout(
+            title='LIME Feature Contributions',
+            xaxis_title='Impact on Prediction',
+            yaxis_title='Features',
+            height=max(400, 30 * len(features))  # Dynamic height based on feature count
         )
         
         return fig
