@@ -10,14 +10,42 @@ import plotly.graph_objects as go
 import shap
 import lime
 import lime.lime_tabular
+import joblib
+import os
 
+def save_model(model, X_train, X_test, filename='trained_model.joblib'):
+    """Save the trained model and data to disk"""
+    try:
+        model_data = {
+            'model': model,
+            'X_train': X_train,
+            'X_test': X_test
+        }
+        joblib.dump(model_data, filename)
+        if not os.path.exists(filename):
+            raise Exception("File was not created")
+        return True
+    except Exception as e:
+        print(f"Error saving model: {str(e)}")
+        return False
+
+def load_model(filename='trained_model.joblib'):
+    """Load the trained model and data from disk"""
+    model_data = joblib.load(filename)
+    return model_data['model'], model_data['X_train'], model_data['X_test']
 
 def train_model(df):
-    # Separate features
-    numeric_features = ['longitude', 'latitude', 'housing_median_age', 'total_rooms',
-       'total_bedrooms', 'population', 'households', 'median_income']
+    # Remove target variable from feature detection
+    features_df = df.drop('median_house_value', axis=1)
     
-    categorical_features = ['ocean_proximity'] 
+    # Automatically detect numeric and categorical features
+    numeric_features = features_df.select_dtypes(
+        include=['int64', 'float64']
+    ).columns.tolist()
+    
+    categorical_features = features_df.select_dtypes(
+        include=['object', 'category', 'bool']
+    ).columns.tolist() 
     
     # Create preprocessing pipelines for numeric and categorical features
     numeric_transformer = Pipeline(steps=[

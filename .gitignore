@@ -1,3 +1,4 @@
 __pycache__/
 .idea/
 testing_ground.ipynb
+.joblib
