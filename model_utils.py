@@ -12,74 +12,159 @@ import lime
 import lime.lime_tabular
 import joblib
 import os
+import warnings
 
-def save_model(model, X_train, X_test, filename='trained_model.joblib'):
-    """Save the trained model and data to disk"""
-    try:
-        model_data = {
-            'model': model,
-            'X_train': X_train,
-            'X_test': X_test
-        }
-        joblib.dump(model_data, filename)
-        if not os.path.exists(filename):
-            raise Exception("File was not created")
-        return True
-    except Exception as e:
-        print(f"Error saving model: {str(e)}")
-        return False
+def clean_data(df):
+    """Clean and prepare the DataFrame for modeling"""
+    df = df.copy()
+    
+    # Drop columns with more than 10% missing data
+    df = df.replace(r'^\s*$', np.nan, regex=True) # empty Strings
+    columns_to_drop = []
+    for col in df.columns:
+        missing_ratio = df[col].isna().sum() / len(df)
+        if missing_ratio > 0.1:
+            columns_to_drop.append(col)
+        
+    if columns_to_drop:
+        print(f"Dropping columns due to more than 10% missing data: {columns_to_drop}")
+        df = df.drop(columns=columns_to_drop)
+    
+    df = df.dropna()
+    
+    # Calculate ratio of unique values to total rows for categorical columns
+    categorical_columns = df.select_dtypes(include=['object', 'category', 'bool']).columns
+    rows_count = len(df)
+    
+    columns_to_drop = []
+    for col in categorical_columns:
+        unique_ratio = df[col].nunique() / rows_count
+        if unique_ratio > 0.2:
+            columns_to_drop.append(col)
+    
+    # Drop categorical columns with too many unique values
+    if columns_to_drop:
+        print(f"Dropping columns due to high cardinality: {columns_to_drop}")
+        df = df.drop(columns=columns_to_drop)
+    
+    # Remove duplicates
+    df = df.drop_duplicates()
+    
+    # Remove constant columns
+    constant_columns = [col for col in df.columns if df[col].nunique() == 1]
+    if constant_columns:
+        print(f"Dropping constant columns: {constant_columns}")
+        df = df.drop(columns=constant_columns)
+    
+    return df
 
-def load_model(filename='trained_model.joblib'):
-    """Load the trained model and data from disk"""
-    model_data = joblib.load(filename)
-    return model_data['model'], model_data['X_train'], model_data['X_test']
+def train_models_for_dataset(dataset_path):
+    """Train models for all numeric features in a dataset"""
+    # Load dataset
+    df = pd.read_csv(dataset_path)
+    df = clean_data(df)
+    dataset_name = os.path.splitext(os.path.basename(dataset_path))[0]
+    
+    # Get all numeric features
+    numeric_features = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    models_dict = {}
+    
+    # Train a model for each numeric feature as target
+    for target in numeric_features:
+        try:
+            # Create feature set excluding current target
+            features_df = df.drop(target, axis=1)
+            
+            # Split features into numeric and categorical
+            remaining_numeric = features_df.select_dtypes(
+                include=['int64', 'float64']
+            ).columns.tolist()
+            
+            categorical_features = features_df.select_dtypes(
+                include=['object', 'category', 'bool']
+            ).columns.tolist()
+            
+            # Create transformers based on available feature types
+            transformers = []
+            if remaining_numeric:
+                numeric_transformer = Pipeline(steps=[
+                    ('scaler', StandardScaler())
+                ])
+                transformers.append(('num', numeric_transformer, remaining_numeric))
+                
+            if categorical_features:
+                categorical_transformer = Pipeline(steps=[
+                    ('onehot', OneHotEncoder(drop='first', sparse_output=False))
+                ])
+                transformers.append(('cat', categorical_transformer, categorical_features))
+            
+            preprocessor = ColumnTransformer(transformers=transformers)
+            
+            # Create pipeline
+            model = Pipeline([
+                ('preprocessor', preprocessor),
+                ('regressor', RandomForestRegressor(n_estimators=100, random_state=42))
+            ])
+            
+            # Prepare data
+            X = df[remaining_numeric + categorical_features]
+            y = df[target]
+            
+            # Split data
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            
+            # Fit pipeline
+            model.fit(X_train, y_train)
+            
+            # Store model and data
+            models_dict[target] = {
+                'model': model,
+                'X_train': X_train,
+                'X_test': X_test
+            }
+            
+        except Exception as e:
+            print(f"Error training model for {target}: {str(e)}")
+            continue
+    
+    # Save all models for this dataset
+    if models_dict:
+        os.makedirs('stored_models', exist_ok=True)
+        joblib.dump(models_dict, f'stored_models/{dataset_name}_models.joblib')
+    
+    return models_dict
 
-def train_model(df):
-    # Remove target variable from feature detection
-    features_df = df.drop('median_house_value', axis=1)
+def train_all_datasets():
+    """Train models for all untrained datasets in the datasets folder"""
+    # Get all dataset files
+    dataset_files = [f for f in os.listdir('datasets') if f.endswith('.csv')]
+    trained_datasets = {}
     
-    # Automatically detect numeric and categorical features
-    numeric_features = features_df.select_dtypes(
-        include=['int64', 'float64']
-    ).columns.tolist()
+    # Get list of already trained datasets
+    existing_models = [f.replace('_models.joblib', '.csv') 
+                      for f in os.listdir('stored_models') 
+                      if f.endswith('_models.joblib')]
     
-    categorical_features = features_df.select_dtypes(
-        include=['object', 'category', 'bool']
-    ).columns.tolist() 
+    # Filter for only untrained datasets
+    untrained_datasets = [f for f in dataset_files if f not in existing_models]
     
-    # Create preprocessing pipelines for numeric and categorical features
-    numeric_transformer = Pipeline(steps=[
-        ('scaler', StandardScaler())
-    ])
+    # Train models only for new datasets
+    for dataset_file in untrained_datasets:
+        print(f"Training models for new dataset: {dataset_file}")
+        dataset_path = os.path.join('datasets', dataset_file)
+        trained_datasets[dataset_file] = train_models_for_dataset(dataset_path)
     
-    categorical_transformer = Pipeline(steps=[
-        ('onehot', OneHotEncoder(drop='first', sparse_output=False))
-    ])
-    
-    # Combine transformers
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numeric_transformer, numeric_features),
-            ('cat', categorical_transformer, categorical_features)
-        ])
-    
-    # Create a pipeline with preprocessor and model
-    model = Pipeline([
-        ('preprocessor', preprocessor),
-        ('regressor', RandomForestRegressor(n_estimators=100, random_state=42))
-    ])
-    
-    # Prepare data
-    X = df[numeric_features + categorical_features]
-    y = df['median_house_value']
-    
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    # Fit pipeline
-    model.fit(X_train, y_train)
-    
-    return model, X_train, X_test
+    if not untrained_datasets:
+        print("No new datasets to train - all datasets have existing models")
+        
+    return trained_datasets
+
+def load_dataset_models(dataset_name):
+    """Load models for a specific dataset"""
+    filepath = f'stored_models/{dataset_name}_models.joblib'
+    if os.path.exists(filepath):
+        return joblib.load(filepath)
+    return None
 
 def plot_feature_importance(model, feature_names):
     """Generate feature importance plot"""
@@ -94,8 +179,15 @@ def plot_feature_importance(model, feature_names):
     if hasattr(model, 'named_steps'):
         preprocessor = model.named_steps['preprocessor']
         # Get transformed feature names
-        numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
-        categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out() if len(preprocessor.named_transformers_['cat'].get_feature_names_out()) > 0 else []
+        numeric_features = []
+        categorical_features = []
+        
+        for name, _, _ in preprocessor.transformers_:
+            if name == 'num':
+                numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
+            elif name == 'cat':
+                categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out()
+                
         transformed_feature_names = list(numeric_features) + list(categorical_features)
     else:
         transformed_feature_names = feature_names
@@ -113,7 +205,8 @@ def plot_feature_importance(model, feature_names):
         title='Feature Importance',
         xaxis_title='Features',
         yaxis_title='Importance Score',
-        xaxis_tickangle=-45  # Angle feature names for better readability
+        xaxis_tickangle=-45,  # Angle feature names for better readability
+        height=600
     )
     return fig
 
@@ -130,9 +223,15 @@ def plot_shap_values(model, X_sample, feature_names):
     if hasattr(model, 'named_steps'):
         preprocessor = model.named_steps['preprocessor']
         X_transformed = model.named_steps['preprocessor'].transform(X_sample)
-        # Get transformed feature names
-        numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
-        categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out() if len(preprocessor.named_transformers_['cat'].get_feature_names_out()) > 0 else []
+        numeric_features = []
+        categorical_features = []
+        
+        for name, _, _ in preprocessor.transformers_:
+            if name == 'num':
+                numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
+            elif name == 'cat':
+                categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out()
+                
         transformed_feature_names = list(numeric_features) + list(categorical_features)
     else:
         transformed_feature_names = feature_names
@@ -153,20 +252,42 @@ def plot_shap_values(model, X_sample, feature_names):
     fig.update_layout(
         title='SHAP Values for Selected Instance',
         xaxis_title='Impact on prediction',
-        showlegend=False
+        showlegend=False,
+        height=max(600, 30 * len(transformed_feature_names))
     )
     return fig
 
-def plot_partial_dependence(model, X, feature_name, num_points=50):
+def plot_partial_dependence(model, X, feature_name, target_feature, num_points=50):
     """Generate partial dependence plot for a specific feature"""
+    if target_feature == feature_name:
+        warnings.warn("Target feature cannot be the same as the feature for partial dependence")
+        return go.Figure().update_layout(
+            title='Cannot create partial dependence plot',
+            annotations=[{
+                'text': 'Target feature cannot be the same as the feature for partial dependence',
+                'xref': 'paper',
+                'yref': 'paper',
+                'showarrow': False,
+                'font': {'size': 16}
+            }],
+            height=400
+        )
+        
     # Get preprocessor and final estimator from pipeline
     if hasattr(model, 'named_steps'):
         preprocessor = model.named_steps['preprocessor']
         rf_model = model.named_steps['regressor']
         
         # Check if feature is numeric or categorical
-        numeric_features = preprocessor.transformers_[0][2]  # Get numeric feature names
-        categorical_features = preprocessor.transformers_[1][2]  # Get categorical feature names
+        numeric_features = []
+        categorical_features = []
+        
+        # Safely get feature names from transformers
+        for name, _, cols in preprocessor.transformers_:
+            if name == 'num':
+                numeric_features = cols
+            elif name == 'cat':
+                categorical_features = cols
         
         if feature_name in numeric_features:
             # Handle numeric feature
@@ -189,8 +310,9 @@ def plot_partial_dependence(model, X, feature_name, num_points=50):
             
             title = f'Partial Dependence Plot for {feature_name}'
             x_label = feature_name
+            is_categorical = False
             
-        else:
+        elif feature_name in categorical_features:
             # Handle categorical feature
             feature_values = X[feature_name].unique()
             predictions = []
@@ -210,30 +332,42 @@ def plot_partial_dependence(model, X, feature_name, num_points=50):
             
             title = f'Partial Dependence Plot for {feature_name}'
             x_label = feature_name
+            is_categorical = True
+        else:
+            raise ValueError(f"Feature {feature_name} not found in dataset")
         
         fig.update_layout(
             title=title,
             xaxis_title=x_label,
-            yaxis_title='Predicted House Value',
-            xaxis_tickangle=-45 if feature_name in categorical_features else 0
+            yaxis_title=f'Predicted {target_feature}',
+            xaxis_tickangle=-45 if is_categorical else 0,
+            height=600
         )
         
         return fig
     else:
         raise ValueError("Model must be a scikit-learn pipeline with preprocessor and regressor steps")
     
-def plot_lime_explanation(model, X_sample, X_train, num_features=10):
+def plot_lime_explanation(model, X_sample, X_train, target_name, num_features=10):
     """Generate LIME explanation plot for a specific instance"""
     # Get preprocessor and final estimator from pipeline
     if hasattr(model, 'named_steps'):
         preprocessor = model.named_steps['preprocessor']
         rf_model = model.named_steps['regressor']
+        numeric_features = []
+        categorical_features = []
+        categorical_indices = []
         
-        # Get transformed feature names
-        numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
-        categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out()
+        for i, (name, _, _) in enumerate(preprocessor.transformers_):
+            if name == 'num':
+                numeric_features = preprocessor.named_transformers_['num'].get_feature_names_out()
+            elif name == 'cat':
+                categorical_features = preprocessor.named_transformers_['cat'].get_feature_names_out()
+                categorical_indices = list(range(len(numeric_features), 
+                                              len(numeric_features) + len(categorical_features)))
+                
         transformed_feature_names = list(numeric_features) + list(categorical_features)
-        
+         
         # Transform training data for LIME explainer
         train_data = preprocessor.transform(X_train)
         
@@ -241,10 +375,10 @@ def plot_lime_explanation(model, X_sample, X_train, num_features=10):
         explainer = lime.lime_tabular.LimeTabularExplainer(
             training_data=train_data,
             feature_names=transformed_feature_names,
-            class_names=['median_house_value'],
+            class_names=[target_name],
             mode='regression',
             training_labels=None,
-            categorical_features=list(range(len(categorical_features))) if len(categorical_features) > 0 else None
+            categorical_features=categorical_indices if categorical_indices else None
         )
         
         # Transform and explain the sample instance
@@ -271,7 +405,7 @@ def plot_lime_explanation(model, X_sample, X_train, num_features=10):
             title='LIME Feature Contributions',
             xaxis_title='Impact on Prediction',
             yaxis_title='Features',
-            height=max(400, 30 * len(features))  # Dynamic height based on feature count
+            height=max(600, 30 * len(features))  # Dynamic height based on feature count
         )
         
         return fig
