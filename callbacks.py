@@ -7,7 +7,6 @@ from model_utils import (
     plot_partial_dependence,
     plot_lime_explanation
 )
-from model_store import store
 from model_utils import load_dataset_models
 
 def register_callbacks(app):
