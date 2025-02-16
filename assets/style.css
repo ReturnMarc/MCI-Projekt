@@ -1,13 +1,49 @@
 /* Styling sheet for the html components */
 
 .main-container {
-    display: grid;
-    grid-template-areas:
-    "box1 box1"
-    "box2 box3"
-    "box4 box5"
-    "box6 box7"
-    max-width: 100%;
-    overlap-y: auto;
-    background-color: #16277c;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.selection-row, .controls-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.selector-container, .control-container {
+    flex: 1;
+}
+
+.dropdown-label, .input-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.dropdown, .number-input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #bdc3c7;
+}
+
+.visualization-row {
+    margin-top: 30px;
+}
+
+.plot-container {
+    border: 1px solid #ecf0f1;
+    border-radius: 4px;
+    padding: 10px;
+    background: white;
+    height: 600px;
 }

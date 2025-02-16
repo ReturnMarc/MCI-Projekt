@@ -6,23 +6,18 @@ the callbacks and the app layout are in different modules.
 from dash import Dash
 from layout import create_layout
 from callbacks import register_callbacks
-from model_utils import train_model
-from model_store import store
-import pandas as pd
+from model_utils import train_all_datasets
+import os
 
 
 # Initialize Dash Server
 app = Dash(__name__, suppress_callback_exceptions=True)
 
-# Load data and train model once
-df = pd.read_csv('housing.csv')
-model, X_train, X_test = train_model(df)
+# Create stored_models directory if it doesn't exist
+os.makedirs('stored_models', exist_ok=True)
 
-# Store model and data in global store
-store.model = model
-store.X_train = X_train
-store.X_test = X_test
-
+# Train models for any new datasets
+trained_datasets = train_all_datasets()
 
 # Set the layout of the app (see layout.py)
 app.layout = create_layout()
@@ -34,4 +29,4 @@ register_callbacks(app)
 app.title = "XAI in MCI"
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
