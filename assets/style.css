@@ -1,18 +1,20 @@
 /* Styling sheet for the html components */
 
 .main-container {
-    padding: 20px;
+    border: 1px solid  #223ab6;
+    padding: 10px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .dashboard-title {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     color: #2c3e50;
 }
 
 .selection-row, .controls-row {
+    border: 1px solid  #223ab6;
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
@@ -36,14 +38,28 @@
     border: 1px solid #bdc3c7;
 }
 
+.plot-selection-container {
+    border: 1px solid #223ab6
+    display: flex;
+}
+
+.graph-label {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
 .visualization-row {
-    margin-top: 30px;
+    display: flex;
+    border: 1px solid #223ab6;
+    gap: 20px;
+    margin-bottom: 20px;
 }
 
 .plot-container {
     border: 1px solid #ecf0f1;
     border-radius: 4px;
-    padding: 10px;
     background: white;
+    width: 560px;
     height: 600px;
 }

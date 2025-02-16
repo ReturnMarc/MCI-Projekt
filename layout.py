@@ -75,14 +75,109 @@ def create_layout():
                 )
             ], className='control-container')
         ], className='controls-row'),
-        
-        # Visualization container
+
+        # Visualization
+        # Most outer containers, contain one selection div and one graph div, one left and one right
         html.Div([
-            dcc.Graph(
-                id='xai-plot',
-                className='plot-container'
-            )
+            html.Div([
+                html.Div([
+                    html.H3('FEATURE IMPORTANCE', className='graph-label'),
+                    html.Div([
+                        html.Button('Platzhalter', n_clicks=0, className='button'),
+                        dcc.Dropdown(id='my_id',
+                                     options=[],
+                                     value=None,
+                                     className='dropdown'),
+                    ], className='controls-row'),
+                    html.Div([dcc.Graph(id='feature-importance-plot',
+                                       className='plot-container')])
+                ])
+            ]),
+            html.Div([
+                html.Div([
+                    html.H3('PARTIAL DEPENDENCE', className='graph-label'),
+                    html.Div([
+                        html.Button('Platzhalter', n_clicks=0, className='button'),
+                        dcc.Dropdown(id='otherid',
+                                     options=[],
+                                     value=None,
+                                     className='dropdown'),
+                    ], className='controls-row'),
+                    html.Div([dcc.Graph(id='partial-dependence-plot',
+                                        className='plot-container')])
+                ])
+            ])
+        ], className='visualization-row'),
+        html.Div([
+            html.Div([
+                html.Div([
+                    html.H3('LIME', className='graph-label'),
+                    html.Div([
+                        html.Button('Platzhalter', n_clicks=0, className='button'),
+                        dcc.Dropdown(id='my_id',
+                                     options=[],
+                                     value=None,
+                                     className='dropdown'),
+                    ], className='controls-row'),
+                    html.Div([dcc.Graph(id='feature-importance-plot',
+                                        className='plot-container')])
+                ])
+            ]),
+            html.Div([
+                html.Div([
+                    html.H3('SHAP VALUES', className='graph-label'),
+                    html.Div([
+                        html.Button('Platzhalter', n_clicks=0, className='button'),
+                        dcc.Dropdown(id='otherid',
+                                     options=[],
+                                     value=None,
+                                     className='dropdown'),
+                    ], className='controls-row'),
+                    html.Div([dcc.Graph(id='partial-dependence-plot',
+                                        className='plot-container')])
+                ])
+            ])
         ], className='visualization-row')
     ])
+
+    #
+    #     html.Div(children=[
+    #         # left selection div
+    #         html.Div(children=[
+    #             html.Label('FEATURE IMPORTANCE', className='graph-label'),
+    #             html.Button('Platzhalter', n_clicks=0, id='button'),
+    #             html.Div(children=[
+    #                 dcc.Graph(id='feature-importance-plot',
+    #                           className='plot-container'
+    #                           )])],
+    #             className='control-container'),
+    #         html.Div(children=[
+    #             html.Label('PARTIAL DEPENDENCE', className='graph-label'),
+    #             html.Div(children=[
+    #                 dcc.Graph(id='partial-dependence-plot',
+    #                           className='plot-container')
+    #             ])],
+    #             className='control-container')
+    #         ],
+    #         className='visualization-row'),
+    #     html.Div(children=[
+    #         # left selection div
+    #         html.Div(children=[
+    #             html.Label('LIME', className='graph-label'),
+    #             html.Div(children=[
+    #                 dcc.Graph(id='lime-plot',
+    #                           className='plot-container'
+    #                           )])],
+    #             className='control-container'),
+    #         html.Div(children=[
+    #             html.Label('SHAP VALUES', className='graph-label'),
+    #             html.Div(children=[
+    #                 dcc.Graph(id='shap-values-plot',
+    #                           className='plot-container')
+    #             ])],
+    #             className='control-container')
+    #         ],
+    #         className='visualization-row')
+    # ])
 
 # CSS styles can be added to assets/style.css

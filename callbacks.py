@@ -1,4 +1,4 @@
-from dash import Input, Output, State, dcc
+from dash import Input, Output, State, dcc, no_update
 import pandas as pd
 from plotly import graph_objs as go
 from model_utils import (
@@ -75,7 +75,26 @@ def register_callbacks(app):
     def reset_feature_selection(available_options):
         # Reset selection when options change
         return available_options[0]['value'] if available_options else None
-    
+
+    @app.callback(
+        Output('feature-importance-plot', 'figure'),
+        [Input('dataset-selector', 'value')]
+    )
+    def update_feature_importance_plot(dataset_name):
+        if not dataset_name:
+            return no_update # -> does not update any layout or components
+
+        # Load models for selected dataset
+        models = load_dataset_models(dataset_name)
+        if not models:
+            return no_update
+
+        # Get model and data for selected target - check back if selection is correct!
+        model_data = next(iter(models.values()))
+        model = model_data['model']
+        X_test = model_data['X_test']
+        return plot_feature_importance(model, X_test.columns)
+
     @app.callback(
         Output('xai-plot', 'figure'),
         [Input('dataset-selector', 'value'),
