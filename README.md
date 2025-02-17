@@ -10,15 +10,6 @@ conda activate xai-dashboard
 
 ## Project Structure
 ```
-MCI-Projekt/
-├── main.py          # Main application entry point
-├── layout.py        # Dashboard layout definition
-├── callbacks.py     # Callback functions
-├── model_utils.py   # Model training and XAI functions
-├── model_store.py   # Global model storage
-├── environment.yml  # Conda environment file
-└── housing.csv      # Dataset
-```
 MCI-Projekt/ 
 ├── main.py # Main application entry point 
 ├── layout.py # Dashboard layout definition 
@@ -41,7 +32,7 @@ MCI-Projekt/
 │ └── ...
 │
 └── environment.yml # Conda environment file
-
+```
 
 ## Usage
 Start the dashboard by running:
