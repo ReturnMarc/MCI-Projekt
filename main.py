@@ -2,7 +2,7 @@
 Main File to start the Dash App. To keep it small,
 the callbacks and the app layout are in different modules.
 """
-
+import dash_bootstrap_components.themes
 from dash import Dash
 from layout import create_layout
 from callbacks import register_callbacks
@@ -11,7 +11,8 @@ import os
 
 
 # Initialize Dash Server
-app = Dash(__name__, suppress_callback_exceptions=True)
+app = Dash(__name__, suppress_callback_exceptions=True,
+           external_stylesheets=[dash_bootstrap_components.themes.BOOTSTRAP])
 
 # Create stored_models directory if it doesn't exist
 os.makedirs('stored_models', exist_ok=True)

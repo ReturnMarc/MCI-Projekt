@@ -413,3 +413,9 @@ def plot_lime_explanation(model, X_sample, X_train, target_name, num_features=10
         return fig
     else:
         raise ValueError("Model must be a scikit-learn pipeline with preprocessor and regressor steps")
+
+def read_dataset(dataset_name):
+    filepath = f'datasets/{dataset_name}.csv'
+    if os.path.exists(filepath):
+        return pd.read_csv(filepath)
+    return None

@@ -82,6 +82,28 @@
     width: 300px;
 }
 
+.dropdown-shap-lime {
+    width: 1000px;
+}
 .dropdown-partial-dependence {
     width: 200px;
+}
+
+#shap-additional-filtering {
+    width: 100px;
+}
+
+.modal-widgets-row {
+    display: flex;
+    flexWrap: wrap;
+    gap: 10px;
+}
+
+.plot-container-big {
+    width: 100%;
+}
+
+.filter-options {
+    display: flex;
+    padding: 10px;
 }

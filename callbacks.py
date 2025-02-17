@@ -1,13 +1,14 @@
-from dash import Input, Output, State, dcc, no_update
+from dash import Input, Output, State, dcc, html, no_update, ALL
 from plotly import graph_objs as go
+import io
 from model_utils import (
     plot_feature_importance, 
     plot_shap_values, 
     plot_partial_dependence,
-    plot_lime_explanation
+    plot_lime_explanation,
 )
-from model_utils import load_dataset_models
-
+from model_utils import load_dataset_models, read_dataset
+import pandas as pd
 def register_callbacks(app):
     """
     This function initializes various callbacks for the main app. Each callback consists of an @app.callback part and
@@ -32,25 +33,26 @@ def register_callbacks(app):
     """
     @app.callback(
         [Output('target-selector', 'options'),
-         Output('feature-importance-dropdown', 'options'),
-         Output('partial-dependence-variable-dropdown', 'options')],
+         Output('shap-dropdown', 'options'),
+         Output('stored-data', 'data')],
         Input('dataset-selector', 'value')
     )
     def update_target_options(dataset_name):
         if not dataset_name:
-            return no_update, no_update, no_update
+            return no_update, no_update,  no_update
         
         models = load_dataset_models(dataset_name)
+        df = read_dataset(dataset_name)
         if models:
             return ([{'label': target, 'value': target} for target in models.keys()],
                     [{'label': target, 'value': target} for target in models.keys()],
-                    [{'label': target, 'value': target} for target in models.keys()])
+                    df.to_dict())
         return no_update, no_update, no_update
 
     @app.callback(
         Output('partial-dependence-feature-dropdown', 'options'),
         [Input('dataset-selector', 'value'),
-        Input('partial-dependence-variable-dropdown', 'value')]
+        Input('target-selector', 'value')]
     )
     def update_feature_options(dataset_name, target_variable):
         if not dataset_name or not target_variable:
@@ -80,7 +82,7 @@ def register_callbacks(app):
 
     @app.callback(
          Output('feature-importance-plot', 'figure'),
-         Input('feature-importance-dropdown', 'value'),
+         Input('target-selector', 'value'),
          State('dataset-selector', 'value'),
     )
     def update_feature_importance_plot(target_variable, dataset_name):
@@ -100,10 +102,9 @@ def register_callbacks(app):
 
     @app.callback(
         Output('partial-dependence-plot', 'figure'),
-        [Input('partial-dependence-variable-dropdown', 'value'),
+        [Input('target-selector', 'value'),
          Input('partial-dependence-feature-dropdown', 'value')],
         State('dataset-selector', 'value')
-
     )
 
     def update_partial_dependence_plot(target_variable, selected_feature, dataset_name):
@@ -158,3 +159,77 @@ def register_callbacks(app):
             X_sample = X_test.iloc[instance_idx:instance_idx+1]
             return plot_lime_explanation(model, X_sample, X_train, target_variable)
 
+    @app.callback(
+        Output('dynamic-filters', 'children'),
+        [Input('dataset-selector', 'value'),
+        Input('shap-dropdown', 'value')]
+    )
+
+    def update_filters(selected_dataset, shap_dropdown_values):
+        if not selected_dataset or not shap_dropdown_values:
+            return no_update
+        df = read_dataset(selected_dataset)
+        df_filtered = df[shap_dropdown_values]
+        filter_elements = []
+        for column in df_filtered.columns:
+            if column == 'ID':
+                continue
+            if df[column].dtype in ['int64', 'float64']:
+                filter_elements.append(html.Div([html.Label(f'{column}:'),
+                                                 dcc.RangeSlider(
+                                                     id={'type': 'rangeslider', 'index': f'{column}'},
+                                                     min=df[column].min(),
+                                                     max=df[column].max(),
+                                                     value=[df[column].min(), df[column].max()],
+                                                     marks={df[column].min(): f'{df[column].min()}',
+                                                            df[column].max(): f'{df[column].max()}'},
+                                                     tooltip={'always_visible': False, 'placement': 'bottom'},
+                                                     className='slider'
+                                                 )],
+                                                style={'width': '200px'}))
+            else:
+                unique_values = df[column].unique()
+                filter_elements.append(html.Div([html.Label(f'{column}'),
+                                                 dcc.Checklist(
+                                                     id={'type': 'checklist', 'index': f'{column}'},
+                                                     options=[{'label': str(val), 'value': str(val)} for val in unique_values if val is not None],
+                                                     value=list(unique_values),
+                                                     className='checklist'
+                                                 )]))
+        return filter_elements
+
+    @app.callback(
+        Output('shap-plot', 'figure'),
+        [Input({'type': 'rangeslider', 'index': ALL}, 'value'),
+         Input({'type': 'checklist', 'index': ALL}, 'value'),
+         Input('target-selector', 'value')],
+        [State('stored-data', 'data'),
+        State('shap-dropdown', 'value'),
+         State('dataset-selector', 'value')]
+    )
+
+    def update_shap_plot(slider_values, checklist_values, target_variable, stored_data, shapely_features, dataset_name):
+        if not dataset_name or not stored_data:
+            return no_update
+        try:
+            df = pd.DataFrame.from_dict(stored_data)
+        except KeyError:
+            return no_update
+
+        filtered_df = df.copy()
+        models = load_dataset_models(dataset_name)
+        if not models or target_variable not in models:
+            return go.Figure().update_layout(height=600)
+
+        for i, col in enumerate(shapely_features[:len(slider_values)]):
+            min_val, max_val = slider_values[i]
+            filtered_df = filtered_df[(filtered_df[col] >= min_val) & (filtered_df[col] <= max_val)]
+        for i, col in enumerate(shapely_features[:len(checklist_values)]):
+            selected_values = checklist_values[i]
+            filtered_df = filtered_df[filtered_df[col].isin(selected_values)]
+        # Get model and data for selected target
+        model_data = models[target_variable]
+        model = model_data['model']
+        X_test = model_data['X_test']
+        X_sample = filtered_df.iloc[0:1]
+        return plot_shap_values(model, X_sample, X_test.columns)
