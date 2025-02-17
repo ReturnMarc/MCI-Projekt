@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.pipeline import Pipeline
+from dash import no_update, dcc, html
 import plotly.express as px
 import plotly.graph_objects as go
 import shap
@@ -419,3 +420,68 @@ def read_dataset(dataset_name):
     if os.path.exists(filepath):
         return pd.read_csv(filepath)
     return None
+
+def get_filter_elements(dataset, features, type):
+    if not dataset or not features:
+        return no_update
+    df = read_dataset(dataset)
+    df_filtered = df[features]
+    filter_elements = []
+    for column in df_filtered.columns:
+        if column == 'ID':
+            continue
+        if df[column].dtype in ['int64', 'float64']:
+            filter_elements.append(html.Div([html.Label(f'{column}:'),
+                                             dcc.RangeSlider(
+                                                 id={'type': f'rangeslider-{type}', 'index': f'{column}'},
+                                                 min=df[column].min(),
+                                                 max=df[column].max(),
+                                                 value=[df[column].min(), df[column].max()],
+                                                 marks={df[column].min(): f'{df[column].min()}',
+                                                        df[column].max(): f'{df[column].max()}'},
+                                                 tooltip={'always_visible': False, 'placement': 'bottom'},
+                                                 className='slider'
+                                             )],
+                                            style={'width': '200px'}))
+        else:
+            unique_values = df[column].unique()
+            filter_elements.append(html.Div([html.Label(f'{column}'),
+                                             dcc.Checklist(
+                                                 id={'type': f'checklist-{type}', 'index': f'{column}'},
+                                                 options=[{'label': str(val), 'value': str(val)} for val in
+                                                          unique_values if val is not None],
+                                                 value=list(unique_values),
+                                                 className='checklist'
+                                             )]))
+    return filter_elements
+
+def get_shap_lime_items(sliders, checklists, target_var, data, features, dataset_name, plot_type):
+    if not dataset_name or not data:
+        return no_update
+    try:
+        df = pd.DataFrame.from_dict(data)
+    except KeyError:
+        return no_update
+
+    filtered_df = df.copy()
+    models = load_dataset_models(dataset_name)
+    if not models or target_var not in models:
+        return go.Figure().update_layout(height=600)
+
+    for i, col in enumerate(features[:len(sliders)]):
+        min_val, max_val = sliders[i]
+        filtered_df = filtered_df[(filtered_df[col] >= min_val) & (filtered_df[col] <= max_val)]
+    for i, col in enumerate(features[:len(checklists)]):
+        selected_values = checklists[i]
+        filtered_df = filtered_df[filtered_df[col].isin(selected_values)]
+    # Get model and data for selected target
+    model_data = models[target_var]
+    model = model_data['model']
+    X_train = model_data['X_train']
+    X_test = model_data['X_test']
+    X_sample = filtered_df.iloc[0:1]
+    if plot_type=='shap':
+        return model, X_sample, X_test
+    else:
+        return model, X_sample, X_train
+
