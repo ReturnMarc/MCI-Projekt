@@ -85,7 +85,7 @@ def create_layout():
                     html.Div([
                         dcc.Dropdown(id='feature-importance-dropdown',
                                      options=[],
-                                     placeholder='Select Feature',
+                                     placeholder='Select Target Feature',
                                      value=None,
                                      className='dropdown-graphs'),
                         html.Button('?', n_clicks=0, className='button'),
@@ -98,10 +98,16 @@ def create_layout():
                 html.Div([
                     html.H3('PARTIAL DEPENDENCE', className='graph-label'),
                     html.Div([
-                        dcc.Dropdown(id='partial-dependence-dropdown',
+                        dcc.Dropdown(id='partial-dependence-variable-dropdown',
                                      options=[],
                                      value=None,
-                                     className='dropdown-graphs'),
+                                     placeholder='Select Target Variable',
+                                     className='dropdown-partial-dependence'),
+                        dcc.Dropdown(id='partial-dependence-feature-dropdown',
+                                     options=[],
+                                     value=None,
+                                     placeholder='Select Target Feature',
+                                     className='dropdown-partial-dependence'),
                         html.Button('?', n_clicks=0, className='button',
                                     id='partial-dependence-button'),
                     ], className='graph-selection-row'),

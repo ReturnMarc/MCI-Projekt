@@ -79,5 +79,9 @@
 }
 
 .dropdown-graphs {
-    width: 300px !important;
+    width: 300px;
+}
+
+.dropdown-partial-dependence {
+    width: 200px;
 }

@@ -198,16 +198,16 @@ def plot_feature_importance(model, feature_names):
     fig.add_trace(go.Bar(
         x=transformed_feature_names,
         y=importances,
-        # name='Feature Importance'
+        name='Feature Importance'
     ))
     
     fig.update_layout(
-        #  title='Feature Importance',
+        title='Feature Importance',
         xaxis_title='Features',
         yaxis_title='Importance Score',
         xaxis_tickangle=-30,  # Angle feature names for better readability
         height=600,
-        margin=dict(l=40, r=10, t=10, b=80)
+        margin=dict(l=40, r=10, t=30, b=80)
     )
     return fig
 
@@ -342,7 +342,8 @@ def plot_partial_dependence(model, X, feature_name, target_feature, num_points=5
             xaxis_title=x_label,
             yaxis_title=f'Predicted {target_feature}',
             xaxis_tickangle=-45 if is_categorical else 0,
-            height=600
+            margin = dict(l=40, r=10, t=30, b=60)
+            #height=600
         )
         
         return fig

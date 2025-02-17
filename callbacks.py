@@ -32,23 +32,25 @@ def register_callbacks(app):
     """
     @app.callback(
         [Output('target-selector', 'options'),
-         Output('feature-importance-dropdown', 'options')],
+         Output('feature-importance-dropdown', 'options'),
+         Output('partial-dependence-variable-dropdown', 'options')],
         Input('dataset-selector', 'value')
     )
     def update_target_options(dataset_name):
         if not dataset_name:
-            return no_update, no_update
+            return no_update, no_update, no_update
         
         models = load_dataset_models(dataset_name)
         if models:
             return ([{'label': target, 'value': target} for target in models.keys()],
+                    [{'label': target, 'value': target} for target in models.keys()],
                     [{'label': target, 'value': target} for target in models.keys()])
-        return no_update, no_update
+        return no_update, no_update, no_update
 
     @app.callback(
-        Output('feature-selector', 'options'),
+        Output('partial-dependence-feature-dropdown', 'options'),
         [Input('dataset-selector', 'value'),
-        Input('target-selector', 'value')]
+        Input('partial-dependence-variable-dropdown', 'value')]
     )
     def update_feature_options(dataset_name, target_variable):
         if not dataset_name or not target_variable:
@@ -77,11 +79,11 @@ def register_callbacks(app):
         return available_options[0]['value'] if available_options else None
 
     @app.callback(
-        Output('feature-importance-plot', 'figure'),
-        [Input('dataset-selector', 'value'),
-         Input('feature-importance-dropdown', 'value')]
+         Output('feature-importance-plot', 'figure'),
+         Input('feature-importance-dropdown', 'value'),
+         State('dataset-selector', 'value'),
     )
-    def update_feature_importance_plot(dataset_name, target_variable):
+    def update_feature_importance_plot(target_variable, dataset_name):
         if not dataset_name or not target_variable:
             return no_update # -> does not update any layout or components
 
@@ -95,6 +97,27 @@ def register_callbacks(app):
         model = model_data['model']
         X_test = model_data['X_test']
         return plot_feature_importance(model, X_test.columns)
+
+    @app.callback(
+        Output('partial-dependence-plot', 'figure'),
+        [Input('partial-dependence-variable-dropdown', 'value'),
+         Input('partial-dependence-feature-dropdown', 'value')],
+        State('dataset-selector', 'value')
+
+    )
+
+    def update_partial_dependence_plot(target_variable, selected_feature, dataset_name):
+        if not dataset_name or not target_variable or not selected_feature:
+            return no_update
+
+        models = load_dataset_models(dataset_name)
+        if not models or target_variable not in models:
+            return no_update
+
+        model_data = models[target_variable]
+        model = model_data['model']
+        X_train = model_data['X_train']
+        return plot_partial_dependence(model, X_train, selected_feature, target_variable)
 
     @app.callback(
         Output('xai-plot', 'figure'),
