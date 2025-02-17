@@ -1,5 +1,11 @@
 /* Styling sheet for the html components */
 
+.button {
+    width: 50px;
+    padding: 5px;
+    height: 30 px;
+}
+
 .main-container {
     border: 1px solid  #223ab6;
     padding: 10px;
@@ -20,6 +26,14 @@
     margin-bottom: 20px;
 }
 
+.graph-selection-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #223ab6;
+}
 .selector-container, .control-container {
     flex: 1;
 }
@@ -62,4 +76,8 @@
     background: white;
     width: 560px;
     height: 600px;
+}
+
+.dropdown-graphs {
+    width: 300px !important;
 }

@@ -83,12 +83,13 @@ def create_layout():
                 html.Div([
                     html.H3('FEATURE IMPORTANCE', className='graph-label'),
                     html.Div([
-                        html.Button('Platzhalter', n_clicks=0, className='button'),
-                        dcc.Dropdown(id='my_id',
+                        dcc.Dropdown(id='feature-importance-dropdown',
                                      options=[],
+                                     placeholder='Select Feature',
                                      value=None,
-                                     className='dropdown'),
-                    ], className='controls-row'),
+                                     className='dropdown-graphs'),
+                        html.Button('?', n_clicks=0, className='button'),
+                    ], className='graph-selection-row'),
                     html.Div([dcc.Graph(id='feature-importance-plot',
                                        className='plot-container')])
                 ])
@@ -97,12 +98,13 @@ def create_layout():
                 html.Div([
                     html.H3('PARTIAL DEPENDENCE', className='graph-label'),
                     html.Div([
-                        html.Button('Platzhalter', n_clicks=0, className='button'),
-                        dcc.Dropdown(id='otherid',
+                        dcc.Dropdown(id='partial-dependence-dropdown',
                                      options=[],
                                      value=None,
-                                     className='dropdown'),
-                    ], className='controls-row'),
+                                     className='dropdown-graphs'),
+                        html.Button('?', n_clicks=0, className='button',
+                                    id='partial-dependence-button'),
+                    ], className='graph-selection-row'),
                     html.Div([dcc.Graph(id='partial-dependence-plot',
                                         className='plot-container')])
                 ])
@@ -113,13 +115,14 @@ def create_layout():
                 html.Div([
                     html.H3('LIME', className='graph-label'),
                     html.Div([
-                        html.Button('Platzhalter', n_clicks=0, className='button'),
-                        dcc.Dropdown(id='my_id',
+                        dcc.Dropdown(id='lime-dropdown',
                                      options=[],
                                      value=None,
-                                     className='dropdown'),
-                    ], className='controls-row'),
-                    html.Div([dcc.Graph(id='feature-importance-plot',
+                                     className='dropdown-graphs'),
+                        html.Button('?', n_clicks=0, className='button',
+                                    id='lime-button'),
+                    ], className='graph-selection-row'),
+                    html.Div([dcc.Graph(id='lime-plot',
                                         className='plot-container')])
                 ])
             ]),
@@ -127,13 +130,14 @@ def create_layout():
                 html.Div([
                     html.H3('SHAP VALUES', className='graph-label'),
                     html.Div([
-                        html.Button('Platzhalter', n_clicks=0, className='button'),
-                        dcc.Dropdown(id='otherid',
+                        dcc.Dropdown(id='shap-dropdown',
                                      options=[],
                                      value=None,
-                                     className='dropdown'),
-                    ], className='controls-row'),
-                    html.Div([dcc.Graph(id='partial-dependence-plot',
+                                     className='dropdown-graphs'),
+                        html.Button('?', n_clicks=0, className='button',
+                                    id='shap-button'),
+                    ], className='graph-selection-row'),
+                    html.Div([dcc.Graph(id='shap-plot',
                                         className='plot-container')])
                 ])
             ])
