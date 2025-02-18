@@ -215,3 +215,47 @@ def register_callbacks(app):
             return plot_shap_values(model, x_sample, x_test.columns)
         except TypeError:
             return no_update
+
+    @app.callback(
+        Output('modal-feature-importance', 'is_open'),
+        [Input('feature-importance-help', 'n_clicks'),
+        Input('close-modal-feature-importance', 'n_clicks')],
+        State('modal-feature-importance', 'is_open')
+    )
+    def toggle_feature_importance_modal(n1, n2, is_open):
+        if n1 or n2:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output('modal-partial-dependence', 'is_open'),
+        [Input('partial-dependence-help', 'n_clicks'),
+         Input('close-modal-partial-dependence', 'n_clicks')],
+        State('modal-partial-dependence', 'is_open')
+    )
+    def toggle_partial_dependence_modal(n1, n2, is_open):
+        if n1 or n2:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output('modal-lime', 'is_open'),
+        [Input('lime-help', 'n_clicks'),
+         Input('close-modal-lime', 'n_clicks')],
+        State('modal-lime', 'is_open')
+    )
+    def toggle_lime_modal(n1, n2, is_open):
+        if n1 or n2:
+            return not is_open
+        return is_open
+
+    @app.callback(
+        Output('modal-shap', 'is_open'),
+        [Input('shap-help', 'n_clicks'),
+         Input('close-modal-shap', 'n_clicks')],
+        State('modal-shap', 'is_open')
+    )
+    def toggle_shap_modal(n1, n2, is_open):
+        if n1 or n2:
+            return not is_open
+        return is_open

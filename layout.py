@@ -88,7 +88,19 @@ def create_layout():
                                     html.Div([
                                         html.Button('?', n_clicks=0, className='button',
                                                     id='feature-importance-help'),
-                                    ], className='graph-selection-row'),
+                                    ], className='graph-selection-row-feature-importance'),
+                                    dbc.Modal([
+                                        dbc.ModalHeader(dbc.ModalTitle('Feature Importance Explanation')),
+                                        dbc.ModalBody('Feature importance tells you which input variables (features) have'
+                                                      ' the biggest impact on the model`s predictions. Think of it as a '
+                                                      'ranking: The higher the importance, the more influence that feature'
+                                                      ' has on the model´s decision-making. This is useful for understanding'
+                                                      ' which factors drive predictions in general. '),
+                                        dbc.ModalFooter(html.Button('Close', id='close-modal-feature-importance',
+                                                                    n_clicks=0, className='button'))
+                                    ],
+                                        id='modal-feature-importance',
+                                        is_open=False),
                                     html.Div([dcc.Graph(id='feature-importance-plot',
                                                         className='plot-container')])
                                 ])
@@ -105,6 +117,21 @@ def create_layout():
                                         html.Button('?', n_clicks=0, className='button',
                                                     id='partial-dependence-help'),
                                     ], className='graph-selection-row'),
+                                    dbc.Modal([
+                                        dbc.ModalHeader(dbc.ModalTitle('Partial Dependence Explanation')),
+                                        dbc.ModalBody('Partial Dependence shows the marginal effect one or two '
+                                                      'features have on the predicted outcome of a machine '
+                                                      'learning model. A partial dependece plot can show whether the '
+                                                      'relationship between the target and the feature is linear,'
+                                                      'monotonic or more complex. This helps you see trends, like whether '
+                                                      'increasing a feature makes predictions go up or down. It works well for '
+                                                      'understanding the overall relationship between a feature '
+                                                      'and the predicted outcome. '),
+                                        dbc.ModalFooter(html.Button('Close', id='close-modal-partial-dependence',
+                                                                    n_clicks=0, className='button'))
+                                    ],
+                                        id='modal-partial-dependence',
+                                        is_open=False),
                                     html.Div([dcc.Graph(id='partial-dependence-plot',
                                                         className='plot-container')])
                                 ])
@@ -114,7 +141,7 @@ def create_layout():
                         html.Div([
                             html.Div([
                                 html.Div([
-                                    html.H3('Lime', className='graph-label'),
+                                    html.H3('LIME', className='graph-label'),
                                     html.Div([
                                         dcc.Dropdown(id='lime-dropdown',
                                                      options=[],
@@ -125,6 +152,23 @@ def create_layout():
                                         html.Button('?', n_clicks=0, className='button',
                                                     id='lime-help'),
                                     ], className='graph-selection-row'),
+                                    dbc.Modal([
+                                        dbc.ModalHeader(dbc.ModalTitle('LIME Explanation')),
+                                        dbc.ModalBody('LIME (Local Interpretable Model-agnostic Explanations) explains'
+                                                      ' a single prediction, it does so by creating a simplified, '
+                                                      'interpretable model around that specific data point. It slightly'
+                                                      ' changes the input and observes how the prediction shifts,'
+                                                      ' helping to approximte the model´s reasoning for that one instance.'
+                                                      '\n\n'
+                                                      'IMPORTANT: SHAP and LIME only explain one row at a time - they '
+                                                      'don´t give insights into the model´s overall behaviour, just why'
+                                                      ' it made a specific decision for a given instance (in this case, '
+                                                      'the first row of the remaining dataset after applying filters).'),
+                                        dbc.ModalFooter(html.Button('Close', id='close-modal-lime',
+                                                                    n_clicks=0, className='button'))
+                                    ],
+                                        id='modal-lime',
+                                        is_open=False),
                                     html.Div(children=[],
                                              id='dynamic-filters-lime',
                                              className='filter-options'),
@@ -135,7 +179,7 @@ def create_layout():
                             html.Hr(),
                             html.Div([
                                 html.Div([
-                                    html.H3('Shap Values', className='graph-label'),
+                                    html.H3('SHAP Values', className='graph-label'),
                                     html.Div([
                                         dcc.Dropdown(id='shap-dropdown',
                                                      options=[],
@@ -146,6 +190,23 @@ def create_layout():
                                         html.Button('?', n_clicks=0, className='button',
                                                     id='shap-help'),
                                     ], className='graph-selection-row'),
+                                    dbc.Modal([
+                                        dbc.ModalHeader(dbc.ModalTitle('SHAP Explanation')),
+                                        dbc.ModalBody('SHAP (SHapley Additive exPlanations) explain a single prediction'
+                                                      ' by showing how much each feature contributed to that specific '
+                                                      'outcome. Think of it as breaking down a decision for one '
+                                                      'particular row of data. Some features push the prediction higher,'
+                                                      ' others lower. SHAP is made for detailed, instance-level '
+                                                      'explanations.\n\n'
+                                                      'IMPORTANT: SHAP and LIME only explain one row at a time - they '
+                                                      'don´t give insights into the model´s overall behaviour, just why'
+                                                      ' it made a specific decision for a given instance (in this case, '
+                                                      'the first row of the remaining dataset after applying filters).'),
+                                        dbc.ModalFooter(html.Button('Close', id='close-modal-shap',
+                                                                    n_clicks=0, className='button'))
+                                    ],
+                                        id='modal-shap',
+                                        is_open=False),
                                     html.Div(children=[],
                                              id='dynamic-filters',
                                              className='filter-options'),

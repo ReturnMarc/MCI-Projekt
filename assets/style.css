@@ -98,6 +98,12 @@ hr {
     margin-bottom: 20px;
 }
 
+.graph-selection-row-feature-importance {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    padding: 5px;
+}
 .plot-container {
     border: 1px solid #ecf0f1;
     border-radius: 4px;
