@@ -12,7 +12,7 @@ def create_layout():
                     className='main-container',
                     children=[
 
-                        html.H1('Model Analysis Dashboard', className='dashboard-title'),
+                        html.H1('MODEL ANALYSIS DASHBOARD', className='dashboard-title'),
 
                         # Dataset and target selection container
                         html.Div([
@@ -39,52 +39,52 @@ def create_layout():
                                 )
                             ], className='selector-container')
                         ], className='selection-row'),
-
-                        # Analysis controls container
-                        html.Div([
-                            html.Div([
-                                html.Label('Select Plot Type:', className='dropdown-label'),
-                                dcc.Dropdown(
-                                    id='plot-type',
-                                    options=[
-                                        {'label': 'Feature Importance', 'value': 'feature_importance'},
-                                        {'label': 'SHAP Values', 'value': 'shap'},
-                                        {'label': 'Partial Dependence', 'value': 'partial_dependence'},
-                                        {'label': 'LIME Explanation', 'value': 'lime'}
-                                    ],
-                                    value='feature_importance',
-                                    className='dropdown'
-                                )
-                            ], className='control-container'),
-
-                            html.Div([
-                                html.Label('Select Feature:', className='dropdown-label'),
-                                dcc.Dropdown(
-                                    id='feature-selector',
-                                    options=[],  # Will be populated based on dataset selection
-                                    value=None,
-                                    className='dropdown'
-                                )
-                            ], className='control-container'),
-
-                            html.Div([
-                                html.Label('Select Instance Index:', className='input-label'),
-                                dcc.Input(
-                                    id='instance-selector',
-                                    type='number',
-                                    value=0,
-                                    min=0,
-                                    className='number-input'
-                                )
-                            ], className='control-container')
-                        ], className='controls-row'),
+                        #
+                        # # Analysis controls container
+                        # html.Div([
+                        #     html.Div([
+                        #         html.Label('Select Plot Type:', className='dropdown-label'),
+                        #         dcc.Dropdown(
+                        #             id='plot-type',
+                        #             options=[
+                        #                 {'label': 'Feature Importance', 'value': 'feature_importance'},
+                        #                 {'label': 'SHAP Values', 'value': 'shap'},
+                        #                 {'label': 'Partial Dependence', 'value': 'partial_dependence'},
+                        #                 {'label': 'LIME Explanation', 'value': 'lime'}
+                        #             ],
+                        #             value='feature_importance',
+                        #             className='dropdown'
+                        #         )
+                        #     ], className='control-container'),
+                        #
+                        #     html.Div([
+                        #         html.Label('Select Feature:', className='dropdown-label'),
+                        #         dcc.Dropdown(
+                        #             id='feature-selector',
+                        #             options=[],  # Will be populated based on dataset selection
+                        #             value=None,
+                        #             className='dropdown'
+                        #         )
+                        #     ], className='control-container'),
+                        #
+                        #     html.Div([
+                        #         html.Label('Select Instance Index:', className='input-label'),
+                        #         dcc.Input(
+                        #             id='instance-selector',
+                        #             type='number',
+                        #             value=0,
+                        #             min=0,
+                        #             className='number-input'
+                        #         )
+                        #     ], className='control-container')
+                        # ], className='controls-row'),
 
                         # Visualization
                         # Most outer containers, contain one selection div and one graph div, one left and one right
                         html.Div([
                             html.Div([
                                 html.Div([
-                                    html.H3('FEATURE IMPORTANCE', className='graph-label'),
+                                    html.H3('Feature Importance', className='graph-label'),
                                     html.Div([
                                         html.Button('?', n_clicks=0, className='button',
                                                     id='feature-importance-help'),
@@ -92,10 +92,10 @@ def create_layout():
                                     html.Div([dcc.Graph(id='feature-importance-plot',
                                                         className='plot-container')])
                                 ])
-                            ]),
+                            ], className='feature-importance-partial-dependence-container'),
                             html.Div([
                                 html.Div([
-                                    html.H3('PARTIAL DEPENDENCE', className='graph-label'),
+                                    html.H3('Partial Dependence', className='graph-label'),
                                     html.Div([
                                         dcc.Dropdown(id='partial-dependence-feature-dropdown',
                                                      options=[],
@@ -108,12 +108,13 @@ def create_layout():
                                     html.Div([dcc.Graph(id='partial-dependence-plot',
                                                         className='plot-container')])
                                 ])
-                            ])
+                            ], className = 'feature-importance-partial-dependence-container'),
                         ], className='visualization-row'),
+                        html.Hr(),
                         html.Div([
                             html.Div([
                                 html.Div([
-                                    html.H3('LIME', className='graph-label'),
+                                    html.H3('Lime', className='graph-label'),
                                     html.Div([
                                         dcc.Dropdown(id='lime-dropdown',
                                                      options=[],
@@ -128,12 +129,13 @@ def create_layout():
                                              id='dynamic-filters-lime',
                                              className='filter-options'),
                                     html.Div([dcc.Graph(id='lime-plot',
-                                                        className='plot-container-big')])
+                                                        className='plot-container-big')]),
                                 ])
-                            ]),
+                            ], className='shap-lime-container'),
+                            html.Hr(),
                             html.Div([
                                 html.Div([
-                                    html.H3('SHAP VALUES', className='graph-label'),
+                                    html.H3('Shap Values', className='graph-label'),
                                     html.Div([
                                         dcc.Dropdown(id='shap-dropdown',
                                                      options=[],
@@ -178,7 +180,7 @@ def create_layout():
                                     html.Div([dcc.Graph(id='shap-plot',
                                                         className='plot-container-big')])
                                 ])
-                            ])
+                            ], className='shap-lime-container')
                         ])
                     ])
 

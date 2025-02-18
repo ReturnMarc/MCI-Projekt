@@ -4,11 +4,26 @@
     width: 50px;
     padding: 5px;
     height: 30 px;
+    background-color:  #152789;
+    color: white;
+}
+
+h3 {
+    color:  #1f34a1 !important;
+    font-weight: bold;
+}
+
+hr {
+    border: 2px solid #1f34a1 !important;
+    border-radius: 2px;
+    opacity: 0.8;
 }
 
 .main-container {
-    border: 1px solid  #223ab6;
+    background-color: #dadce6;
+    border: 5px solid  #6e6f73;
     padding: 10px;
+    border-radius: 10px;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -16,14 +31,17 @@
 .dashboard-title {
     text-align: center;
     margin-bottom: 20px;
-    color: #2c3e50;
+    color:  #1f34a1;
+    font-weight: bold;
 }
 
 .selection-row, .controls-row {
-    border: 1px solid  #223ab6;
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
+    padding: 5px;
+    border: 2px solid #6e6f73;
+    border-radius: 5px;
 }
 
 .graph-selection-row {
@@ -32,17 +50,29 @@
     gap: 20px;
     padding: 5px;
     margin-bottom: 10px;
-    border: 1px solid #223ab6;
 }
 .selector-container, .control-container {
     flex: 1;
+}
+
+.shap-lime-container {
+    border: 2px solid #6e6f73;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.feature-importance-partial-dependence-container {
+    border: 2px solid #6e6f73;
+    border-radius: 5px;
+    padding: 5px;
+
 }
 
 .dropdown-label, .input-label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    color: #34495e;
+    color: #1f34a1;
 }
 
 .dropdown, .number-input {
@@ -53,7 +83,6 @@
 }
 
 .plot-selection-container {
-    border: 1px solid #223ab6
     display: flex;
 }
 
@@ -65,7 +94,6 @@
 
 .visualization-row {
     display: flex;
-    border: 1px solid #223ab6;
     gap: 20px;
     margin-bottom: 20px;
 }
@@ -106,4 +134,8 @@
 .filter-options {
     display: flex;
     padding: 10px;
+}
+
+.slider {
+    color:  #1f34a1;
 }
