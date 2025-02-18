@@ -130,7 +130,7 @@ hr {
 
 .modal-widgets-row {
     display: flex;
-    flexWrap: wrap;
+    flex-Wrap: wrap;
     gap: 10px;
 }
 
