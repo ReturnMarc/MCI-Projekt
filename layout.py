@@ -39,46 +39,6 @@ def create_layout():
                                 )
                             ], className='selector-container')
                         ], className='selection-row'),
-                        #
-                        # # Analysis controls container
-                        # html.Div([
-                        #     html.Div([
-                        #         html.Label('Select Plot Type:', className='dropdown-label'),
-                        #         dcc.Dropdown(
-                        #             id='plot-type',
-                        #             options=[
-                        #                 {'label': 'Feature Importance', 'value': 'feature_importance'},
-                        #                 {'label': 'SHAP Values', 'value': 'shap'},
-                        #                 {'label': 'Partial Dependence', 'value': 'partial_dependence'},
-                        #                 {'label': 'LIME Explanation', 'value': 'lime'}
-                        #             ],
-                        #             value='feature_importance',
-                        #             className='dropdown'
-                        #         )
-                        #     ], className='control-container'),
-                        #
-                        #     html.Div([
-                        #         html.Label('Select Feature:', className='dropdown-label'),
-                        #         dcc.Dropdown(
-                        #             id='feature-selector',
-                        #             options=[],  # Will be populated based on dataset selection
-                        #             value=None,
-                        #             className='dropdown'
-                        #         )
-                        #     ], className='control-container'),
-                        #
-                        #     html.Div([
-                        #         html.Label('Select Instance Index:', className='input-label'),
-                        #         dcc.Input(
-                        #             id='instance-selector',
-                        #             type='number',
-                        #             value=0,
-                        #             min=0,
-                        #             className='number-input'
-                        #         )
-                        #     ], className='control-container')
-                        # ], className='controls-row'),
-
                         # Visualization
                         # Most outer containers, contain one selection div and one graph div, one left and one right
                         html.Div([
@@ -172,6 +132,10 @@ def create_layout():
                                     html.Div(children=[],
                                              id='dynamic-filters-lime',
                                              className='filter-options'),
+                                    html.Div(html.Label('Selected Instance: ', className='dropdown-label')),
+                                    html.Div(children=[],
+                                             id='show-lime-instance',
+                                             style={'margin-bottom': '10px'}),
                                     html.Div([dcc.Graph(id='lime-plot',
                                                         className='plot-container-big')]),
                                 ])
@@ -210,79 +174,15 @@ def create_layout():
                                     html.Div(children=[],
                                              id='dynamic-filters',
                                              className='filter-options'),
+                                    html.Div(html.Label('Selected Instance: ', className='dropdown-label')),
+                                    html.Div(children=[],
+                                             id='show-shap-instance'),
                                     dcc.Store(id='stored-data'),
-                                        # html.Button('Filter Data', n_clicks=0, className='button',
-                                        #             id='shap-additional-filtering'),
-                                        # dbc.Modal([
-                                        #     dbc.ModalHeader(dbc.ModalTitle('Filter Data')),
-                                        #     dbc.ModalBody([html.Div(children=[],
-                                        #                             style={'display': 'flex',
-                                        #                                    'flexWrap': 'wrap',
-                                        #                                    'gap': '10px',
-                                        #                                    'justifyContent': 'space-between'},
-                                        #                             id='dynamic-filters',
-                                        #                             className='modal-widgets-row'),
-                                        #                    html.Div(children=[],
-                                        #                             id='data-table')]),
-                                        #     dbc.ModalFooter(
-                                        #         [html.Button("Use Filter", id='apply-filters', n_clicks=0,
-                                        #                      className='button',
-                                        #                      style={'width': 200}),
-                                        #          html.Button('Close', id='close-modal', n_clicks=0,
-                                        #                      className='button')]),
-                                        #
-                                        # ],
-                                        #     id='modal-filter',
-                                        #     size='xl',
-                                        #     backdrop=True,
-                                        #     centered=True,
-                                        #     is_open=False,
-                                        # ),
                                     html.Div([dcc.Graph(id='shap-plot',
                                                         className='plot-container-big')])
                                 ])
                             ], className='shap-lime-container')
                         ])
                     ])
-
-    #
-    #     html.Div(children=[
-    #         # left selection div
-    #         html.Div(children=[
-    #             html.Label('FEATURE IMPORTANCE', className='graph-label'),
-    #             html.Button('Platzhalter', n_clicks=0, id='button'),
-    #             html.Div(children=[
-    #                 dcc.Graph(id='feature-importance-plot',
-    #                           className='plot-container'
-    #                           )])],
-    #             className='control-container'),
-    #         html.Div(children=[
-    #             html.Label('PARTIAL DEPENDENCE', className='graph-label'),
-    #             html.Div(children=[
-    #                 dcc.Graph(id='partial-dependence-plot',
-    #                           className='plot-container')
-    #             ])],
-    #             className='control-container')
-    #         ],
-    #         className='visualization-row'),
-    #     html.Div(children=[
-    #         # left selection div
-    #         html.Div(children=[
-    #             html.Label('LIME', className='graph-label'),
-    #             html.Div(children=[
-    #                 dcc.Graph(id='lime-plot',
-    #                           className='plot-container'
-    #                           )])],
-    #             className='control-container'),
-    #         html.Div(children=[
-    #             html.Label('SHAP VALUES', className='graph-label'),
-    #             html.Div(children=[
-    #                 dcc.Graph(id='shap-values-plot',
-    #                           className='plot-container')
-    #             ])],
-    #             className='control-container')
-    #         ],
-    #         className='visualization-row')
-    # ])
 
 # CSS styles can be added to assets/style.css

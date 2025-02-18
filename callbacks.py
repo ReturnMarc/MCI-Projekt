@@ -1,4 +1,4 @@
-from dash import Input, Output, State, dcc, html, no_update, ALL
+from dash import Input, Output, State, dcc, html, no_update, ALL, dash_table
 from plotly import graph_objs as go
 import io
 from model_utils import (
@@ -132,7 +132,8 @@ def register_callbacks(app):
         return filter_elements
 
     @app.callback(
-        Output('lime-plot', 'figure'),
+        [Output('lime-plot', 'figure'),
+         Output('show-lime-instance', 'children')],
         [Input({'type': 'rangeslider-lime', 'index': ALL}, 'value'),
          Input({'type': 'checklist-lime', 'index': ALL}, 'value'),
          Input('target-selector', 'value')],
@@ -145,48 +146,55 @@ def register_callbacks(app):
         try:
             model, x_sample, x_train = get_shap_lime_items(slider_values, checklist_values, target_variable, stored_data,
                                                            lime_features, dataset_name, 'lime')
-            return plot_lime_explanation(model, x_sample, x_train, target_variable)
-        except TypeError:
-            return no_update
 
-    @app.callback(
-        Output('xai-plot', 'figure'),
-        [Input('dataset-selector', 'value'),
-        Input('target-selector', 'value'),
-        Input('feature-selector', 'value'),
-        Input('plot-type', 'value'),
-        Input('instance-selector', 'value')]
-    )
-    def update_xai_plot(dataset_name, target_variable, selected_feature, plot_type, instance_idx):
-        # Return empty figure with fixed height if no data selected
-        if not dataset_name or not target_variable:
-            return go.Figure().update_layout(height=600)
-        
-        # Load models for selected dataset
-        models = load_dataset_models(dataset_name)
-        if not models or target_variable not in models:
-            return go.Figure().update_layout(height=600)
-        
-        # Get model and data for selected target
-        model_data = models[target_variable]
-        model = model_data['model']
-        X_train = model_data['X_train']
-        X_test = model_data['X_test']
-        
-        # Create new figure for each plot type
-        if plot_type == 'feature_importance':
-            return plot_feature_importance(model, X_test.columns)
-        
-        elif plot_type == 'shap':
-            X_sample = X_test.iloc[instance_idx:instance_idx+1]
-            return plot_shap_values(model, X_sample, X_test.columns)
-            
-        elif plot_type == 'partial_dependence':
-            return plot_partial_dependence(model, X_train, selected_feature, target_variable)
-            
-        elif plot_type == 'lime':
-            X_sample = X_test.iloc[instance_idx:instance_idx+1]
-            return plot_lime_explanation(model, X_sample, X_train, target_variable)
+            table = dash_table.DataTable(
+                columns=[{'name': i, 'id': i} for i in x_sample.columns],
+                data=x_sample.to_dict('records'),
+                style_table={'overflowX': 'auto'})
+
+            fig = plot_lime_explanation(model, x_sample, x_train, target_variable).to_dict()
+            return fig, table
+        except TypeError:
+            return no_update, no_update
+    #
+    # @app.callback(
+    #     Output('xai-plot', 'figure'),
+    #     [Input('dataset-selector', 'value'),
+    #     Input('target-selector', 'value'),
+    #     Input('feature-selector', 'value'),
+    #     Input('plot-type', 'value'),
+    #     Input('instance-selector', 'value')]
+    # )
+    # def update_xai_plot(dataset_name, target_variable, selected_feature, plot_type, instance_idx):
+    #     # Return empty figure with fixed height if no data selected
+    #     if not dataset_name or not target_variable:
+    #         return go.Figure().update_layout(height=600)
+    #
+    #     # Load models for selected dataset
+    #     models = load_dataset_models(dataset_name)
+    #     if not models or target_variable not in models:
+    #         return go.Figure().update_layout(height=600)
+    #
+    #     # Get model and data for selected target
+    #     model_data = models[target_variable]
+    #     model = model_data['model']
+    #     X_train = model_data['X_train']
+    #     X_test = model_data['X_test']
+    #
+    #     # Create new figure for each plot type
+    #     if plot_type == 'feature_importance':
+    #         return plot_feature_importance(model, X_test.columns)
+    #
+    #     elif plot_type == 'shap':
+    #         X_sample = X_test.iloc[instance_idx:instance_idx+1]
+    #         return plot_shap_values(model, X_sample, X_test.columns)
+    #
+    #     elif plot_type == 'partial_dependence':
+    #         return plot_partial_dependence(model, X_train, selected_feature, target_variable)
+    #
+    #     elif plot_type == 'lime':
+    #         X_sample = X_test.iloc[instance_idx:instance_idx+1]
+    #         return plot_lime_explanation(model, X_sample, X_train, target_variable)
 
     @app.callback(
         Output('dynamic-filters', 'children'),
@@ -199,7 +207,8 @@ def register_callbacks(app):
         return filter_elements
 
     @app.callback(
-        Output('shap-plot', 'figure'),
+        [Output('shap-plot', 'figure'),
+         Output('show-shap-instance', 'children')],
         [Input({'type': 'rangeslider-shap', 'index': ALL}, 'value'),
          Input({'type': 'checklist-shap', 'index': ALL}, 'value'),
          Input('target-selector', 'value')],
@@ -212,7 +221,12 @@ def register_callbacks(app):
         try:
             model, x_sample, x_test = get_shap_lime_items(slider_values, checklist_values, target_variable, stored_data,
                                                           shapely_features, dataset_name, 'shap')
-            return plot_shap_values(model, x_sample, x_test.columns)
+            table = dash_table.DataTable(
+                columns=[{'name': i, 'id': i} for i in x_sample.columns],
+                data=x_sample.to_dict('records'),
+                style_table={'overflowX': 'auto'})
+            fig = plot_shap_values(model, x_sample, x_test.columns).to_dict()
+            return fig, table
         except TypeError:
             return no_update
 

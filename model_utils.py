@@ -5,7 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.pipeline import Pipeline
-from dash import no_update, dcc, html
+from dash import no_update, dcc, html, dash_table
 import plotly.express as px
 import plotly.graph_objects as go
 import shap
@@ -415,6 +415,26 @@ def plot_lime_explanation(model, X_sample, X_train, target_name, num_features=10
     else:
         raise ValueError("Model must be a scikit-learn pipeline with preprocessor and regressor steps")
 
+# def extract_counterfactuals(dice_exp):
+#     cf_examples = dice_exp.cf_examples_list[0]
+#     cf_df = pd.DataFrame(cf_examples.final_cfs_df, columns=cf_examples.feature_names_including_target)
+#
+#     return cf_df
+#
+# def plot_dice_table(X_sample, dice_exp):
+#     cf_df = extract_counterfactuals(dice_exp)
+#     original = X_sample.to_frame().T
+#
+#     combined_df = pd.concat([original, cf_df], ignore_index=True)
+#     combined_df['Type'] = pd.Series(['Original'] + [f"CF {i+1}" for i in range(len(cf_df))])
+#
+#     return dash_table.DataTable(
+#         columns=[{'name': i, 'id': i} for i in combined_df.columns],
+#         data=combined_df.to_dict("records"),
+#         style_data_conditional=[
+#             {'if': {'row_index': 0}, 'backgroundColor': 'lightblue'}
+#         ]
+#     )
 def read_dataset(dataset_name):
     filepath = f'datasets/{dataset_name}.csv'
     if os.path.exists(filepath):
@@ -425,8 +445,10 @@ def get_filter_elements(dataset, features, type):
     if not dataset or not features:
         return no_update
     df = read_dataset(dataset)
+
     df_filtered = df[features]
     filter_elements = []
+
     for column in df_filtered.columns:
         if column == 'ID':
             continue
@@ -464,6 +486,7 @@ def get_shap_lime_items(sliders, checklists, target_var, data, features, dataset
         return no_update
 
     filtered_df = df.copy()
+
     models = load_dataset_models(dataset_name)
     if not models or target_var not in models:
         return go.Figure().update_layout(height=600)
@@ -474,6 +497,10 @@ def get_shap_lime_items(sliders, checklists, target_var, data, features, dataset
     for i, col in enumerate(features[:len(checklists)]):
         selected_values = checklists[i]
         filtered_df = filtered_df[filtered_df[col].isin(selected_values)]
+
+    numeric_features = [feature for feature in features if feature in df.columns and df[feature].dtype in ['int64', 'float64']]
+    if numeric_features:
+        filtered_df = filtered_df.sort_values(by=numeric_features, ascending=True)
     # Get model and data for selected target
     model_data = models[target_var]
     model = model_data['model']
