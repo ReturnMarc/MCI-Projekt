@@ -4,6 +4,7 @@
 Use environment.yml file for setting up your enviornment. Run the following commands when your current directory is the project folder.
 
 ```cmd
+conda activate
 conda env create -f environment.yml
 conda activate xai-dashboard
 ```
