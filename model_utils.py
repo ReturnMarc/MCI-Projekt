@@ -453,18 +453,25 @@ def get_filter_elements(dataset, features, type):
         if column == 'ID':
             continue
         if df[column].dtype in ['int64', 'float64']:
-            filter_elements.append(html.Div([html.Label(f'{column}:'),
-                                             dcc.RangeSlider(
-                                                 id={'type': f'rangeslider-{type}', 'index': f'{column}'},
-                                                 min=df[column].min(),
-                                                 max=df[column].max(),
-                                                 value=[df[column].min(), df[column].max()],
-                                                 marks={df[column].min(): f'{df[column].min()}',
-                                                        df[column].max(): f'{df[column].max()}'},
-                                                 tooltip={'always_visible': False, 'placement': 'bottom'},
-                                                 className='slider'
-                                             )],
-                                            style={'width': '200px'}))
+            # Convert numpy types to native Python types
+            min_val = float(df[column].min())
+            max_val = float(df[column].max())
+            filter_elements.append(html.Div([
+                html.Label(f'{column}:'),
+                dcc.RangeSlider(
+                    id={'type': f'rangeslider-{type}', 'index': f'{column}'},
+                    min=min_val,  # Now using Python float
+                    max=max_val,  # Now using Python float
+                    value=[min_val, max_val],  # Now using Python float
+                    marks={
+                        min_val: f'{min_val:.1f}',  # Format numbers and convert to string
+                        max_val: f'{max_val:.1f}'
+                    },
+                    tooltip={'always_visible': False, 'placement': 'bottom'},
+                    className='slider'
+                )],
+                style={'width': '200px'}
+            ))
         else:
             unique_values = df[column].unique()
             filter_elements.append(html.Div([html.Label(f'{column}'),
