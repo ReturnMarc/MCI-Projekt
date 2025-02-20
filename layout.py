@@ -81,8 +81,8 @@ def create_layout():
                                         dbc.ModalHeader(dbc.ModalTitle('Partial Dependence Explanation')),
                                         dbc.ModalBody('Partial Dependence shows the marginal effect one or two '
                                                       'features have on the predicted outcome of a machine '
-                                                      'learning model. A partial dependece plot can show whether the '
-                                                      'relationship between the target and the feature is linear,'
+                                                      'learning model. A partial dependence plot can show whether the '
+                                                      'relationship between the target and the feature is linear, '
                                                       'monotonic or more complex. This helps you see trends, like whether '
                                                       'increasing a feature makes predictions go up or down. It works well for '
                                                       'understanding the overall relationship between a feature '
