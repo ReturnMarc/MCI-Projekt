@@ -30,4 +30,4 @@ register_callbacks(app)
 app.title = "XAI in MCI"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
